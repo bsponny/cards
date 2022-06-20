@@ -1,95 +1,105 @@
 from deck import Deck
 
-def printHands(playerHands, cardsFlipped):
-    for i in range(len(playerHands)):
-        hand = "Player " + str(i + 1) + ": "
-        for j in range(len(playerHands[i])):
-            if cardsFlipped[i][j]:
-                hand += str(playerHands[i][j])
-            else:
-                hand += " *** "
-        print(hand)
+def printHands(hand, flipped, you):
+    if you:
+        player = "Your Hand:\n"
+    else:
+        player = "Computer's Hand:\n"
+
+    for i in range(len(hand)):
+        if flipped[i]:
+            player += str(hand[i])
+        else:
+            player += " *** "
+    print(player)
+
+def deal(deck):
+    hand = []
+
+    for i in range(10):
+        hand.append(deck.draw())
+    return hand
+
+def setUp():
+    flipped = []
+
+    for i in range(10):
+        flipped.append(False)
+    return flipped
+
+def turn(card, hand, flipped):
+    cardValue = card.getCardValue()
+    if cardValue > 10:
+        return hand, flipped, card
+    index = cardValue - 1
+
+    while not flipped[index]:
+        oldCard = hand[index]
+        hand[index] = card
+        flipped[index] = True
+        card = oldCard
+        cardValue = card.getCardValue()
+
+        if cardValue > 10:
+            return hand, flipped, card
+
+        index = cardValue - 1
+        print("The card from your hand is the " + str(card))
+
+    return hand, flipped, card
 
 def main():
-    deck = Deck(True)
-    validPlayers = False
+    deck = Deck(False)
 
-    while not validPlayers:
-        players = int(input("How many players? "))
-        if players > 1 and players < 5:
-            validPlayers = True
-        else:
-            print("Sorry. I need 2 - 4 players")
-            validPlayers = False
-
-    playerHands = []
-    cardsFlipped = []
-    playerLevels = []
-
-    for i in range(players):
-        playerHands.append([])
-        cardsFlipped.append([])
-        playerLevels.append(10)
+    playerFlipped = setUp()
+    computerFlipped = setUp()
 
     playing = True
     while playing:
-        if (0 in playerLevels):
-            playing = False
-            print("Player " + str(playerLevels.index(0) + 1) + " wins!")
+        if not False in playerFlipped:
+            print("You win!!")
             print("Thanks for playing!")
+            playing = False
             break
 
-        discard = deck.draw()
+        elif not False in computerFlipped:
+            print("Sorry. You lost.")
+            print("Thanks for playing though.")
+            playing = False
+            break
 
-        for player in range(players):
-            for level in range(playerLevels[player]):
-                playerHands[player].append(deck.draw())
-                cardsFlipped[player].append(False)
+        else:
+            playerHand = deal(deck)
+            computerHand = deal(deck)
 
-        printHands(playerHands, cardsFlipped)
+            discard = deck.draw()
 
-        playRound = True
-        while playRound:
-            for player in range(players):
-                validAnswer = False
-                while not validAnswer:
-                    answer = int(input("Do you want to (1)Draw or (2) pick up the " + str(discard) + "? "))
-                    if answer == 1:
-                        newCard = deck.draw()
-                        validAnswer = True
-                    elif answer == 2:
-                        newCard = discard
-                        validAnswer = True
-                    else:
-                        print("Wrong answer. Try again")
-                        validAnswer = False
+            printHands(playerHand, playerFlipped, True)
+            printHands(computerHand, computerFlipped, False)
 
-                print("Drawn Card: " + str(newCard))
+            drawQuestion = int(input("Do you want to (1) pick up the " + str(discard) + "or (2) draw a new card? "))
 
-                while not (newCard.getCardValue() > 11 and newCard.getCardValue() < 14):
-                    cardValue = newCard.getCardValue() - 1
-                    tempCard = playersHand[player][cardValue]
+            if drawQuestion == 1:
+                newCard = discard
+                drew = "picked up"
+            else:
+                newCard = deck.draw()
+                drew = "drew"
 
-                    if not cardsFlipped[player][cardValue]:
-                        playersHand[player][cardValue] = newCard
-                        newCard = tempCard
+            print("You " + drew + " the " + str(newCard))
 
-                        cardsFlipped[player][cardValue] = True
-                        printHands(playerHands, cardsFlipped)
-                    else:
-                        if tempCard.getCardValue() == 11 or tempCard.getCardValue == 14:
-                            playersHand[player][cardValue] = newCard
-                            newCard = tempCard
+            playerHand, playerFlipped, discard = turn(newCard, playerHand, playerFlipped)
 
-                            cardsFlipped[player][cardValue] = True
-                            printHands(playerHands, cardsFlipped)
+            printHands(playerHand, playerFlipped, True)
+            printHands(computerHand, computerFlipped, False)
 
-                discard = newCard
+            print("\nNow it's the computer's turn!\n")
 
-                if player != players - 1:
-                    print("Next Player!")
+            cardValue = discard.getCardValue()
+            index = cardValue - 1
+            if cardValue < 11:
+                if not computerFlipped[index]:
+                    computerHand, computerFlipped, discard = turn(discard, computerHand, computerFlipped)
 
-        playing = False
 
 main()
-

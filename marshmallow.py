@@ -50,6 +50,7 @@ def turn(card, hand, flipped):
 
 def main():
     deck = Deck(False)
+    deck.shuffle()
 
     playerFlipped = setUp()
     computerFlipped = setUp()

@@ -18,3 +18,7 @@ class Deck:
 
     def draw(self):
         return self.__deck.pop()
+
+    def printDeck(self):
+        for i in range(len(self.__deck)):
+            print(self.__deck[i])
